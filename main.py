@@ -20,7 +20,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 fake_users_db = {
     "admin": {
         "username": "admin",
-        "hashed_password": pwd_context.hash("40028922"),  # Mude a senha aqui pra algo que você lembre
+        "plain_password": os.getenv("ADMIN_PASSWORD", "senha-secreta-123"),
     }
 }
 
@@ -35,7 +35,8 @@ def authenticate_user(fake_db, username: str, password: str):
     user = get_user(fake_db, username)
     if not user:
         return False
-    if not verify_password(password, user["hashed_password"]):
+    # Hash da senha enviada e compara com a plain armazenada (pra teste — em prod use hash salvo)
+    if not pwd_context.verify(password, pwd_context.hash(user["plain_password"])):
         return False
     return user
 
