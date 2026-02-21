@@ -1,0 +1,7 @@
+echo "fastapi" > requirements.txt
+echo "uvicorn[standard]" >> requirements.txt
+echo "pydantic" >> requirements.txt
+echo "python-jose[cryptography]" >> requirements.txt
+echo "passlib[bcrypt]" >> requirements.txt
+echo "python-multipart" >> requirements.txt
+echo "python-dotenv" >> requirements.txt   # pra ler .env
