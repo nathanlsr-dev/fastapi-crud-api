@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta, timezone
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware  
 from pydantic import BaseModel
 from typing import Annotated
@@ -17,10 +18,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
+load_dotenv() # Carrega .env localmente (pra teste)
+
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+if not ADMIN_PASSWORD:
+    raise ValueError("ADMIN_PASSWORD não configurada nas cariáveis de ambiente")
+
 fake_users_db = {
     "admin": {
         "username": "admin",
-        "plain_password": os.getenv("ADMIN_PASSWORD", "senha-secreta-123"),
+        "plain_password": pwd_context.hash(ADMIN_PASSWORD), # Hash gerado UMA VEZ no startup com a senha do env
     }
 }
 
@@ -35,8 +42,8 @@ def authenticate_user(fake_db, username: str, password: str):
     user = get_user(fake_db, username)
     if not user:
         return False
-    # Hash da senha enviada e compara com a plain armazenada (pra teste — em prod use hash salvo)
-    if not pwd_context.verify(password, pwd_context.hash(user["plain_password"])):
+    # Compara a senha enviada com o hash JÁ SALVO (não hashea de novo)
+    if not pwd_context.verify(password, user["hashed_password"]):
         return False
     return user
 
