@@ -11,23 +11,27 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 # Configurações de segurança
-SECRET_KEY = "arcl4ajKv61T8XA21TC1ryC4CkZdTuf9ZEaJV4cpd9khVzSPuH"  # Gere uma real forte (ex: use um gerador online ou openssl)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-load_dotenv() # Carrega .env localmente (pra teste)
+# Configurações de segurança
+load_dotenv()  # Carrega .env localmente (pra desenvolvimento/teste)
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY não configurada nas variáveis de ambiente! Configure no Render ou .env local.")
 
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
 if not ADMIN_PASSWORD:
-    raise ValueError("ADMIN_PASSWORD não configurada nas cariáveis de ambiente")
+    raise ValueError("ADMIN_PASSWORD não configurada nas variáveis de ambiente! Configure no Render ou .env local.")
 
 fake_users_db = {
     "admin": {
         "username": "admin",
-        "plain_password": pwd_context.hash(ADMIN_PASSWORD), # Hash gerado UMA VEZ no startup com a senha do env
+        "hashed_password": pwd_context.hash(ADMIN_PASSWORD),  # Hash gerado em runtime com a senha do env
     }
 }
 
